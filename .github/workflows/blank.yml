@@ -21,36 +21,13 @@ jobs:
     - name: Create ZIP deployment package
       run: zip -r ${{ env.DEPLOY_PACKAGE_NAME }} ./ -x *.git*
 
-    - name: Check Env
-      run: echo "${{ secrets.MY_AWS_ACCESS_KEY }}"
-      
-    - name: Check AWS CLI version
-      run: aws --version || echo "AWS CLI not installed"
 
-    - name: Install or update AWS CLI v2
-      run: |
-        if ! aws --version | grep 'aws-cli/2'; then
-          echo "Installing AWS CLI v2"
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
-        else
-          echo "AWS CLI v2 already installed"
-        fi
+    - name: Configure my AWS Credentials
+      with:
+        aws-access-key-id    :  ${{ secrets.MY_AWS_ACCESS_KEY }}
+        aws-secret-access-key:  ${{ secrets.MY_AWS_SECRET_KEY }}
+        aws-region           :  ${{ env.AWS_REGION_NAME }}
 
-    - name: Verify AWS CLI installation
-      run: aws --version
-
-    - name: Configure AWS credentials
-      run: |
-        echo "Configuring AWS credentials..."
-        aws configure set aws_access_key_id ${{ secrets.MY_AWS_ACCESS_KEY }}
-        aws configure set aws_secret_access_key ${{ secrets.MY_AWS_SECRET_KEY }}
-        aws configure set region ${{ env.AWS_REGION_NAME }}
-        echo "AWS Access Key ID: ${{ secrets.MY_AWS_ACCESS_KEY }}"
-        echo "AWS Secret Access Key: ${{ secrets.MY_AWS_SECRET_KEY }}"
-        echo "AWS Region: ${{ env.AWS_REGION_NAME }}"
-        aws sts get-caller-identity
       
     - name: Copy Deployment package to S3 bucket
       run: aws s3 cp ${{ env.DEPLOY_PACKAGE_NAME }} s3://${{ env.S3_BUCKET_NAME }}/
