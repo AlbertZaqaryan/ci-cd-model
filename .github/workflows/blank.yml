@@ -1,12 +1,13 @@
 name: CI-CD-Pipeline-to-AWS-S3Bucket
-env:
-  S3_BUCKET_NAME : "aws.machinelearning.team.bucket"
-  DEPLOY_PACKAGE_NAME       : "ml_model_${{ github.sha }}.zip"
-  AWS_REGION_NAME           : "us-east-1"
 
-on: 
+env:
+  S3_BUCKET_NAME: "aws.machinelearning.team.bucket"
+  DEPLOY_PACKAGE_NAME: "ml_model_${{ github.sha }}.zip"
+  AWS_REGION_NAME: "us-east-1"
+
+on:
   push:
-    branches: 
+    branches:
       - main
 
 jobs:
@@ -16,19 +17,24 @@ jobs:
     steps:
     - name: Git clone our repo
       uses: actions/checkout@v2
-       
-    - name: Create ZIP deployment package
-      run : zip -r ${{ env.DEPLOY_PACKAGE_NAME }} ./ -x *.git*
       
-    - name: Configure my AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id    :  ${{ secrets.MY_AWS_ACCESS_KEY }}
-        aws-secret-access-key:  ${{ secrets.MY_AWS_SECRET_KEY }}
-        aws-region           :  ${{ env.AWS_REGION_NAME }}
-        
+    - name: Create ZIP deployment package
+      run: zip -r ${{ env.DEPLOY_PACKAGE_NAME }} ./ -x *.git*
+
+    - name: Install AWS CLI v2
+      run: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip awscliv2.zip
+        sudo ./aws/install
+
+    - name: Configure AWS credentials
+      run: |
+        aws configure set aws_access_key_id ${{ secrets.MY_AWS_ACCESS_KEY }}
+        aws configure set aws_secret_access_key ${{ secrets.MY_AWS_SECRET_KEY }}
+        aws configure set region ${{ env.AWS_REGION_NAME }}
+      
     - name: Copy Deployment package to S3 bucket
-      run : aws s3 cp ${{ env.DEPLOY_PACKAGE_NAME }}  s3://${{ env.S3_BUCKET_NAME }}/
+      run: aws s3 cp ${{ env.DEPLOY_PACKAGE_NAME }} s3://${{ env.S3_BUCKET_NAME }}/
     
     - name: Finish CI part
-      run : echo "CI Pipeline part Finished successfully!"
+      run: echo "CI Pipeline part Finished successfully!"
