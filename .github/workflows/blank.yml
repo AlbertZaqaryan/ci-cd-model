@@ -22,7 +22,7 @@ jobs:
       run: zip -r ${{ env.DEPLOY_PACKAGE_NAME }} ./ -x *.git*
 
     - name: Check Env
-      run: echo ${{ secrets.MY_AWS_ACCESS_KEY }} ${{ secrets.MY_AWS_SECRET_KEY }}
+      run: echo "${{ secrets.MY_AWS_ACCESS_KEY }}"
       
     - name: Check AWS CLI version
       run: aws --version || echo "AWS CLI not installed"
