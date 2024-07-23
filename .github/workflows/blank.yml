@@ -35,11 +35,19 @@ jobs:
           echo "AWS CLI v2 already installed"
         fi
 
+    - name: Verify AWS CLI installation
+      run: aws --version
+
     - name: Configure AWS credentials
       run: |
+        echo "Configuring AWS credentials..."
         aws configure set aws_access_key_id ${{ secrets.MY_AWS_ACCESS_KEY }}
         aws configure set aws_secret_access_key ${{ secrets.MY_AWS_SECRET_KEY }}
         aws configure set region ${{ env.AWS_REGION_NAME }}
+        echo "AWS Access Key ID: ${{ secrets.MY_AWS_ACCESS_KEY }}"
+        echo "AWS Secret Access Key: ${{ secrets.MY_AWS_SECRET_KEY }}"
+        echo "AWS Region: ${{ env.AWS_REGION_NAME }}"
+        aws sts get-caller-identity
       
     - name: Copy Deployment package to S3 bucket
       run: aws s3 cp ${{ env.DEPLOY_PACKAGE_NAME }} s3://${{ env.S3_BUCKET_NAME }}/
